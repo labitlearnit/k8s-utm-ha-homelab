@@ -481,6 +481,14 @@ for vm_def in "${VMS[@]}"; do
 done
 echo ""
 
+# Acquire sudo upfront so it doesn't prompt mid-deployment (Step 5 needs it)
+echo "Sudo access is needed to update /etc/hosts. Authenticating now..."
+sudo -v
+# Keep sudo alive in background (macOS cache expires after 5 min)
+while true; do sudo -n true; sleep 120; done 2>/dev/null &
+SUDO_KEEPALIVE_PID=$!
+trap "kill $SUDO_KEEPALIVE_PID 2>/dev/null" EXIT
+
 # Create directories
 mkdir -p "$ISO_DIR" "$IMG_DIR" "$BIN_DIR"
 
